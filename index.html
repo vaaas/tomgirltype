@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+	<meta charset='utf-8'/>
+	<title>Tomgirl Type</title>
+	<style>
+		.wrong { color: red; }
+		.right { color: green; }
+	</style>
+	<script>
+		'use strict'
+
+		const reduce = f => i => xs => { for (const x of xs) i = f(x)(i) ; return i }
+		const map = f => function* (xs) { let i = 0 ; for (const x of xs) yield f(x,i++,xs) }
+		const filter = f => function* (xs) { let i = 0 ; for (const x of xs) if (f(x,i++,xs)) yield x }
+
+		const C = f => a => b => f(b)(a)
+		const K = x => () => x
+		const I = a => a
+		const T = a => b => b(a)
+		const P = (x, ...fs) => reduce(I)(x)(fs)
+		const PP = (...fs) => x => P(x, ...fs)
+		const tap = f => x => { f(x) ; return x }
+
+		const limit = n => function* (xs) { let i = 0 ; for (const x of xs) { yield x ; if (++i >= n) break }}
+		function* construct(f) { let i = 0 ; while (true) yield f(i++) }
+		const empty = tap(x => { while (x.firstChild) x.firstChild.remove() })
+
+		const elem = document.createElement.bind(document)
+		const text = document.createTextNode.bind(document)
+		const child = c => tap(x => x.appendChild(c))
+		const children = cs => tap(x => { empty(x) ; for (const c of cs) x.appendChild(c) })
+
+		const add = a => b => a+b
+		const incr = add(1)
+		const decr = add(-1)
+
+		class Observable
+			{ constructor(x)
+				{ this.x = x
+				this.watchers = new Set() }
+			get() { return this.x }
+			map(f)
+				{ this.x = f(this.x)
+				return this.notify() }
+			notify()
+				{ for (const x of this.watchers) x(this.x)
+				return this }
+			watch(f)
+				{ this.watchers.add(f)
+				return this }
+			unwatch(f)
+				{ this.watchers.delete(f)
+				return this }}
+
+		const update_class = elem => state =>
+			{ if (state === 0)
+				elem.className = ''
+			else if (state === 1)
+				elem.className = 'right'
+			else
+				elem.className = 'wrong' }
+
+		function main()
+			{ let loaded_text = new Observable(null)
+			let correctness = new Observable([])
+			let position = new Observable(null)
+			const body = document.body
+
+			const render_child = (c, i) => P(elem('span'),
+				child(text(c)),
+				tap(x => correctness.get()[i].watch(update_class(x) )))
+
+			loaded_text.watch(x =>
+				{ position.map(K(0))
+				correctness.map(K(P(construct(() => new Observable(0)), limit(x.length), Array.from)))
+				P(body, children(map(render_child)(x))) })
+
+			loaded_text.map(K('However, in the general case, functions of two parameters are not associative, so the order in which one carries out the combination of the elements matters. On lists, there are two obvious ways to carry this out: either by recursively combining the first element with the results of combining the rest (called a right fold) or by recursively combining the results of combining all but the last element with the last one, (called a left fold). Also, in practice, it is convenient and natural to have an initial value which in the case of a right fold, is used when one reaches the end of the list, and in the case of a left fold, is what is initially combined with the first element of the list. This is perhaps clearer to see in the equations defining foldr and foldl in Haskell. Note that in Haskell, [] represents the empty list, and (x:xs) represents the list starting with x and where the rest of the list is xs.'))
+
+			window.onkeydown = function (e) {
+				const key = e.key
+				const pos = position.get()
+				if (key === 'Backspace')
+					{ position.map(decr)
+					correctness.get()[position.get()].map(K(0)) }
+				else if (key.length > 1) return
+				else if (pos >= correctness.get().length) return
+				else if (key === loaded_text.get()[pos])
+					{ correctness.get()[pos].map(K(1))
+					position.map(incr) }
+				else
+					{ correctness.get()[pos].map(K(2))
+					position.map(incr) }
+			}}
+
+		window.onload = main
+	</script>
+	<body></body>
+</html>

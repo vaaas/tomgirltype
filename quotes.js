@@ -1,0 +1,4 @@
+'use strict'
+const quotes = [
+['Vas Keys is a keyboard layout that I based off Vu Keys by Vu Dang. The modifications are in order to improve the layout for Japanese text and mixed Japanese-English text, similar to TypeHack, although sometimes they are minor improvements for English text as well. Improvements are calculated through the Keyboard Layout Analyzer. For the most common words, for English, is scores slightly worse than Vu Keys but better than TypeHack. For Japanese, it scores worse than TypeHack but much better than Vu Keys. I developed it because I had become good at Vu Keys and didn’t want to switch my layout completely, especially the vowels. Vu Keys’ basic principle of using as many fingers as possible is preserved. My personal best in monkeytype is 185 WPM with this layout.', 'memer']
+]

@@ -18,16 +18,14 @@
 	<script>
 		'use strict'
 
-		const reduce = f => i => xs => { for (const x of xs) i = f(x)(i) ; return i }
 		const map = f => function* (xs) { let i = 0 ; for (const x of xs) yield f(x,i++,xs) }
-		const filter = f => function* (xs) { let i = 0 ; for (const x of xs) if (f(x,i++,xs)) yield x }
 
 		const C = f => a => b => f(b)(a)
 		const K = x => () => x
 		const I = a => a
 		const T = a => b => b(a)
-		const P = (x, ...fs) => reduce(I)(x)(fs)
-		const PP = (...fs) => x => P(x, ...fs)
+        const P = (x, ...fs) => { for (let i=0; i < fs.length; i++) x = fs[i](x) ; return x }
+        const PP = (...fs) => x => P(x, ...fs)
 		const tap = f => x => { f(x) ; return x }
 
 		const limit = n => function* (xs) { let i = 0 ; for (const x of xs) { yield x ; if (++i >= n) break }}
